@@ -520,7 +520,7 @@ if predict_button:
             emoji_resultado = "🔴"
         
         st.markdown(f"""
-        <div style='background: {cor_resultado}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-height: 180px;'>
+        <div style='background: {cor_resultado}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 200px; display: flex; flex-direction: column; justify-content: center;'>
             <h2 style='color: white; margin: 0; font-size: 1.3rem;'>Predição do Modelo</h2>
             <h1 style='color: white; margin: 0.5rem 0; font-size: 2rem;'>{emoji_resultado} {formatar_nome_categoria(pred)}</h1>
         </div>
@@ -550,7 +550,7 @@ if predict_button:
             status_peso = "Abaixo do Ideal"
         
         st.markdown(f"""
-        <div style='background: {cor_peso}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-height: 180px;'>
+        <div style='background: {cor_peso}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 200px; display: flex; flex-direction: column; justify-content: center;'>
             <h2 style='color: white; margin: 0; font-size: 1.3rem;'>Peso Ideal</h2>
             <h1 style='color: white; margin: 0.5rem 0; font-size: 2rem;'>{emoji_peso} {peso_ideal_min:.1f} - {peso_ideal_max:.1f} kg</h1>
             <p style='color: white; margin: 0.5rem 0; font-size: 1rem;'>{status_peso}</p>
