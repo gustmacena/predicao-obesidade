@@ -64,8 +64,8 @@ streamlit run app_dashboard.py
 
 | Aplicação | URL Pública |
 |---|---|
-| **Predição** | `https://predicao-obesidade-tech-4.streamlit.app/` |
-| **Painel Analítico** | `https://painel-obesidade--tech-4.streamlit.app/` |
+| **Predição** | [![Streamlit](https://img.shields.io/badge/Acessar-Predição-0A6DB0?logo=streamlit)](https://predicao-obesidade-tech-4.streamlit.app/) |
+| **Painel Analítico** | [![Streamlit](https://img.shields.io/badge/Acessar-Painel-0A6DB0?logo=streamlit)](https://painel-obesidade--tech-4.streamlit.app/) |
 
 ---
 
