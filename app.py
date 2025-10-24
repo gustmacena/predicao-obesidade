@@ -306,7 +306,7 @@ with tab1:
             "Idade (anos)",
             min_value=0.0,
             max_value=120.0,
-            value=25.0,
+            value=23.0,
             step=1.0,
             help="Idade do paciente em anos completos"
         )
@@ -327,7 +327,7 @@ with tab1:
             "Peso (kg)",
             min_value=20.0,
             max_value=300.0,
-            value=75.0,
+            value=80.0,
             step=0.1,
             help="Peso atual do paciente em quilogramas"
         )
