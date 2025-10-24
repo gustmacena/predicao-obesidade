@@ -438,8 +438,8 @@ with tab3:
         )
         
         tue = st.slider(
-            "📱 Tempo diário em dispositivos eletrônicos (0-2)",
-            0.0, 2.0, 1.0, 0.5,
+            "📱 Tempo diário em dispositivos eletrônicos (0-3)",
+            0.0, 3.0, 1.0, 0.5,
             help="Horas por dia em celular, TV, computador, videogame, etc."
         )
     
