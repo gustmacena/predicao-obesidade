@@ -217,7 +217,7 @@ with st.sidebar:
         <p><strong>Tech Challenge - Fase 04</strong></p>
         <p>POSTECH - Data Analytics</p>
         <p>Modelo: Gradient Boosting Classifier</p>
-        <p>Acurácia: >75%</p>
+        <p>Acurácia: 95%</p>
     </div>
     """, unsafe_allow_html=True)
 
