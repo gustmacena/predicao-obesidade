@@ -503,9 +503,11 @@ if predict_button:
     # ============================================================================
     st.markdown("## 🎯 Resultados da Predição")
     
-    # Resultado principal
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
+    # Resultado principal - 2 cards lado a lado
+    col_card1, col_card2 = st.columns(2)
+    
+    # Card 1: Predição do Modelo
+    with col_card1:
         # Determinar cor e emoji baseado na predição
         if "Baixo_peso" in pred or "Peso_normal" in pred:
             cor_resultado = "#4caf50"
@@ -518,14 +520,14 @@ if predict_button:
             emoji_resultado = "🔴"
         
         st.markdown(f"""
-        <div style='background: {cor_resultado}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
-            <h2 style='color: white; margin: 0; font-size: 1.5rem;'>Predição do Modelo</h2>
-            <h1 style='color: white; margin: 0.5rem 0; font-size: 2.5rem;'>{emoji_resultado} {formatar_nome_categoria(pred)}</h1>
+        <div style='background: {cor_resultado}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-height: 180px;'>
+            <h2 style='color: white; margin: 0; font-size: 1.3rem;'>Predição do Modelo</h2>
+            <h1 style='color: white; margin: 0.5rem 0; font-size: 2rem;'>{emoji_resultado} {formatar_nome_categoria(pred)}</h1>
         </div>
         """, unsafe_allow_html=True)
     
     # Card 2: Peso Ideal
-    with col2:
+    with col_card2:
         # Calcular peso ideal baseado em IMC saudável (18.5 - 24.9)
         peso_ideal_min = 18.5 * (altura ** 2)
         peso_ideal_max = 24.9 * (altura ** 2)
@@ -548,9 +550,9 @@ if predict_button:
             status_peso = "Abaixo do Ideal"
         
         st.markdown(f"""
-        <div style='background: {cor_peso}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
-            <h2 style='color: white; margin: 0; font-size: 1.5rem;'>Peso Ideal</h2>
-            <h1 style='color: white; margin: 0.5rem 0; font-size: 2.5rem;'>{emoji_peso} {peso_ideal_min:.1f} - {peso_ideal_max:.1f} kg</h1>
+        <div style='background: {cor_peso}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-height: 180px;'>
+            <h2 style='color: white; margin: 0; font-size: 1.3rem;'>Peso Ideal</h2>
+            <h1 style='color: white; margin: 0.5rem 0; font-size: 2rem;'>{emoji_peso} {peso_ideal_min:.1f} - {peso_ideal_max:.1f} kg</h1>
             <p style='color: white; margin: 0.5rem 0; font-size: 1rem;'>{status_peso}</p>
         </div>
         """, unsafe_allow_html=True)
