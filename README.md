@@ -4,12 +4,12 @@
 
 Este projeto, desenvolvido para o Tech Challenge de Data Analytics, apresenta uma solução completa para auxiliar equipes médicas na triagem e intervenção precoce da obesidade. A solução é composta por:
 
-1. **Aplicação de Predição (app_PT_melhorado.py):** Uma interface intuitiva para prever o nível de obesidade de um paciente em tempo real, com foco em usabilidade e feedback imediato.
+1. **Aplicação de Predição (app.py):** Uma interface intuitiva para prever o nível de obesidade de um paciente em tempo real, com foco em usabilidade e feedback imediato.
 2. **Painel Analítico (app_dashboard.py):** Um dashboard estratégico com insights baseados em dados para a equipe médica, apoiando a tomada de decisão clínica e a definição de estratégias de saúde.
 
 ---
 
-## ✨ 1. Aplicação de Predição (app_PT_melhorado.py)
+## ✨ 1. Aplicação de Predição (app.py)
 
 A aplicação utiliza um modelo de Machine Learning (Gradient Boosting Classifier) para classificar o paciente em 7 níveis de peso.
 
@@ -54,7 +54,7 @@ Para rodar as aplicações localmente, certifique-se de que o `Obesity.csv` este
 
 ```bash
 # Executar a Aplicação de Predição
-streamlit run app_PT_melhorado.py
+streamlit run app.py
 
 # Executar o Painel Analítico
 streamlit run app_dashboard.py
@@ -73,9 +73,9 @@ streamlit run app_dashboard.py
 
 ```
 /
-├── app_PT_melhorado.py         # Aplicação de Predição (Melhorada)
+├── app.py         # Aplicação de Predição (Melhorada)
 ├── app_dashboard.py            # Painel Analítico (Novo)
-├── ml_pipeline_obesity_PT.py   # Script de Treinamento do Modelo
+├── ml_pipeline_obesity.py   # Script de Treinamento do Modelo
 ├── Obesity.csv                 # Dataset Original
 ├── requirements.txt            # Dependências do Projeto
 ├── .streamlit/                 # Configurações de Tema e Servidor
