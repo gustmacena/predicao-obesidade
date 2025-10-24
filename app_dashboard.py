@@ -221,7 +221,7 @@ def create_dashboard():
     with col3:
         st.metric(label="Média de IMC", value=f"{media_imc:.2f}")
     with col4:
-        st.metric(label="% Obesidade (Tipo I, II, III)", value=f"{perc_obesidade*100:.1f}%", delta=f"{perc_obesidade*100:.1f}%")
+        st.metric(label="% Obesidade (Tipo I, II, III)", value=f"{perc_obesidade*100:.1f}%")
 
     st.markdown("---")
 
