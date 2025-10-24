@@ -64,8 +64,8 @@ streamlit run app_dashboard.py
 
 | Aplicação | URL Pública |
 |---|---|
-| **Predição** | `https://[seu-nome]-predicao.streamlit.app` |
-| **Painel Analítico** | `https://[seu-nome]-painel.streamlit.app` |
+| **Predição** | `https://predicao-obesidade-tech-4.streamlit.app/` |
+| **Painel Analítico** | `https://painel-obesidade--tech-4.streamlit.app/` |
 
 ---
 
