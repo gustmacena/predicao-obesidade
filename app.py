@@ -183,7 +183,7 @@ with st.sidebar:
     st.markdown("""
     ### O que é este sistema?
     
-    Este é um sistema de apoio à decisão médica que utiliza **Inteligência Artificial** 
+    Este é um sistema de apoio à decisão médica que utiliza **Machine Learning** 
     para prever o nível de obesidade de um paciente com base em dados demográficos, 
     hábitos alimentares e estilo de vida.
     
