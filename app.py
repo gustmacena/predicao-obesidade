@@ -524,7 +524,36 @@ if predict_button:
         </div>
         """, unsafe_allow_html=True)
     
-    st.markdown("")
+    # Card 2: Peso Ideal
+    with col2:
+        # Calcular peso ideal baseado em IMC saudável (18.5 - 24.9)
+        peso_ideal_min = 18.5 * (altura ** 2)
+        peso_ideal_max = 24.9 * (altura ** 2)
+        peso_ideal_medio = (peso_ideal_min + peso_ideal_max) / 2
+        
+        # Determinar cor baseado na diferença do peso atual
+        diferenca_peso = peso - peso_ideal_medio
+        
+        if abs(diferenca_peso) <= 5:
+            cor_peso = "#4caf50"  # Verde - próximo do ideal
+            emoji_peso = "✅"
+            status_peso = "Próximo do Ideal"
+        elif diferenca_peso > 5:
+            cor_peso = "#ff9800"  # Laranja - acima do ideal
+            emoji_peso = "⚠️"
+            status_peso = "Acima do Ideal"
+        else:
+            cor_peso = "#2196f3"  # Azul - abaixo do ideal
+            emoji_peso = "📊"
+            status_peso = "Abaixo do Ideal"
+        
+        st.markdown(f"""
+        <div style='background: {cor_peso}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
+            <h2 style='color: white; margin: 0; font-size: 1.5rem;'>Peso Ideal</h2>
+            <h1 style='color: white; margin: 0.5rem 0; font-size: 2.5rem;'>{emoji_peso} {peso_ideal_min:.1f} - {peso_ideal_max:.1f} kg</h1>
+            <p style='color: white; margin: 0.5rem 0; font-size: 1rem;'>{status_peso}</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Gráfico de probabilidades
     col1, col2 = st.columns(2)
