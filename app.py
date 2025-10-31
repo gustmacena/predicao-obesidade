@@ -3,6 +3,16 @@ import pandas as pd
 import joblib
 import plotly.graph_objects as go
 import plotly.express as px
+import base64
+from datetime import datetime
+import os
+
+# Importar módulo de geração de PDF
+try:
+    from pdf_generator import generate_obesity_report
+    PDF_AVAILABLE = True
+except ImportError:
+    PDF_AVAILABLE = False
 
 # ============================================================================
 # FUNÇÃO AUXILIAR PARA FORMATAÇÃO
@@ -193,6 +203,7 @@ with st.sidebar:
     2. **Clique** no botão "Realizar Predição"
     3. **Analise** os resultados e probabilidades
     4. **Interprete** as recomendações fornecidas
+    5. **Exporte** o relatório em PDF
     
     ### Categorias de Obesidade
     
@@ -217,7 +228,7 @@ with st.sidebar:
         <p><strong>Tech Challenge - Fase 04</strong></p>
         <p>POSTECH - Data Analytics</p>
         <p>Modelo: Gradient Boosting Classifier</p>
-        <p>Acurácia: 95%</p>
+        <p>Acurácia: >75%</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -306,7 +317,7 @@ with tab1:
             "Idade (anos)",
             min_value=0.0,
             max_value=120.0,
-            value=23.0,
+            value=25.0,
             step=1.0,
             help="Idade do paciente em anos completos"
         )
@@ -327,7 +338,7 @@ with tab1:
             "Peso (kg)",
             min_value=20.0,
             max_value=300.0,
-            value=80.0,
+            value=75.0,
             step=0.1,
             help="Peso atual do paciente em quilogramas"
         )
@@ -436,10 +447,10 @@ with tab3:
             0.0, 3.0, 1.0, 0.5,
             help="0 = Sedentário, 1 = 1-2 dias/semana, 2 = 3-4 dias/semana, 3 = 5+ dias/semana"
         )
-        
+
         tue = st.slider(
             "📱 Tempo diário em dispositivos eletrônicos (0-3)",
-            0.0, 3.0, 1.0, 0.5,
+            0.0, 2.0, 1.0, 0.5, 2.5, 3.0,
             help="Horas por dia em celular, TV, computador, videogame, etc."
         )
     
@@ -503,11 +514,9 @@ if predict_button:
     # ============================================================================
     st.markdown("## 🎯 Resultados da Predição")
     
-    # Resultado principal - 2 cards lado a lado
-    col_card1, col_card2 = st.columns(2)
-    
-    # Card 1: Predição do Modelo
-    with col_card1:
+    # Resultado principal
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
         # Determinar cor e emoji baseado na predição
         if "Baixo_peso" in pred or "Peso_normal" in pred:
             cor_resultado = "#4caf50"
@@ -520,42 +529,13 @@ if predict_button:
             emoji_resultado = "🔴"
         
         st.markdown(f"""
-        <div style='background: {cor_resultado}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 200px; display: flex; flex-direction: column; justify-content: center;'>
-            <h2 style='color: white; margin: 0; font-size: 1.3rem;'>Predição do Modelo</h2>
-            <h1 style='color: white; margin: 0.5rem 0; font-size: 2rem;'>{emoji_resultado} {formatar_nome_categoria(pred)}</h1>
+        <div style='background: {cor_resultado}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
+            <h2 style='color: white; margin: 0; font-size: 1.5rem;'>Predição do Modelo</h2>
+            <h1 style='color: white; margin: 0.5rem 0; font-size: 2.5rem;'>{emoji_resultado} {formatar_nome_categoria(pred)}</h1>
         </div>
         """, unsafe_allow_html=True)
     
-    # Card 2: Peso Ideal
-    with col_card2:
-        # Calcular peso ideal baseado em IMC saudável (18.5 - 24.9)
-        peso_ideal_min = 18.5 * (altura ** 2)
-        peso_ideal_max = 24.9 * (altura ** 2)
-        peso_ideal_medio = (peso_ideal_min + peso_ideal_max) / 2
-        
-        # Determinar cor baseado na diferença do peso atual
-        diferenca_peso = peso - peso_ideal_medio
-        
-        if abs(diferenca_peso) <= 5:
-            cor_peso = "#4caf50"  # Verde - próximo do ideal
-            emoji_peso = "✅"
-            status_peso = "Próximo do Ideal"
-        elif diferenca_peso > 5:
-            cor_peso = "#ff9800"  # Laranja - acima do ideal
-            emoji_peso = "⚠️"
-            status_peso = "Acima do Ideal"
-        else:
-            cor_peso = "#2196f3"  # Azul - abaixo do ideal
-            emoji_peso = "📊"
-            status_peso = "Abaixo do Ideal"
-        
-        st.markdown(f"""
-        <div style='background: {cor_peso}; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 200px; display: flex; flex-direction: column; justify-content: center;'>
-            <h2 style='color: white; margin: 0; font-size: 1.3rem;'>Peso Ideal</h2>
-            <h1 style='color: white; margin: 0.5rem 0; font-size: 2rem;'>{emoji_peso} {peso_ideal_min:.1f} - {peso_ideal_max:.1f} kg</h1>
-            <p style='color: white; margin: 0.5rem 0; font-size: 1rem;'>{status_peso}</p>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown("")
     
     # Gráfico de probabilidades
     col1, col2 = st.columns(2)
@@ -720,6 +700,80 @@ if predict_button:
     st.divider()
     
     # ============================================================================
+    # EXPORTAR RELATÓRIO EM PDF
+    # ============================================================================
+    st.markdown("## 📄 Exportar Relatório")
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if PDF_AVAILABLE:
+            if st.button("📥 Gerar Relatório em PDF", use_container_width=True, type="primary"):
+                with st.spinner("Gerando relatório em PDF..."):
+                    # Preparar dados do paciente
+                    patient_data = {
+                        'Gênero': genero,
+                        'Idade': idade,
+                        'Altura': altura,
+                        'Peso': peso,
+                        'IMC': imc,
+                        'Histórico Familiar': historico_familiar,
+                        'FAVC': favc,
+                        'FCVC': fcvc,
+                        'NCP': ncp,
+                        'CAEC': caec,
+                        'Fuma': fuma,
+                        'Água por dia': ch2o,
+                        'Conta Calorias': scc,
+                        'Atividade Física': faf,
+                        'Tempo em Telas': tue,
+                        'Álcool': alcool,
+                        'Transporte': transp
+                    }
+                    
+                    # Preparar resultados da predição
+                    probabilities_dict = {}
+                    for i, cls in enumerate(classes):
+                        probabilities_dict[formatar_nome_categoria(cls)] = proba[i] * 100
+                    
+                    prediction_result = {
+                        'prediction': formatar_nome_categoria(pred),
+                        'confidence': max(proba) * 100,
+                        'probabilities': probabilities_dict
+                    }
+                    
+                    # Gerar PDF
+                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    pdf_filename = f'relatorio_obesidade_{timestamp}.pdf'
+                    
+                    try:
+                        pdf_path = generate_obesity_report(patient_data, prediction_result, pdf_filename)
+                        
+                        # Ler arquivo PDF
+                        with open(pdf_path, 'rb') as f:
+                            pdf_bytes = f.read()
+                        
+                        # Criar botão de download
+                        st.success("✅ Relatório gerado com sucesso!")
+                        st.download_button(
+                            label="⬇️ Baixar Relatório PDF",
+                            data=pdf_bytes,
+                            file_name=pdf_filename,
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+                        
+                        # Limpar arquivo temporário
+                        if os.path.exists(pdf_path):
+                            os.remove(pdf_path)
+                            
+                    except Exception as e:
+                        st.error(f"❌ Erro ao gerar PDF: {str(e)}")
+        else:
+            st.warning("⚠️ Módulo de geração de PDF não disponível. Instale a biblioteca 'fpdf' para habilitar esta funcionalidade.")
+    
+    st.divider()
+    
+    # ============================================================================
     # TABELA DETALHADA DE PROBABILIDADES
     # ============================================================================
     with st.expander("📈 Ver Tabela Detalhada de Probabilidades"):
@@ -751,4 +805,3 @@ st.markdown("""
     </p>
 </div>
 """, unsafe_allow_html=True)
-
