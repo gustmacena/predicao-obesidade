@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import numpy as np
 
 # ============================================================================
 # CONFIGURAÇÃO DA PÁGINA
@@ -16,7 +17,6 @@ st.set_page_config(
 # ============================================================================
 # ESTILOS CSS PERSONALIZADOS
 # ============================================================================
-# Reutilizando estilos do app_PT_melhorado.py para manter a consistência
 st.markdown("""
 <style>
     /* Importar fonte moderna */
@@ -103,17 +103,16 @@ st.markdown("""
 # FUNÇÕES DE PRÉ-PROCESSAMENTO E CARREGAMENTO
 # ============================================================================
 
-# Função para carregar e pré-processar os dados
 @st.cache_data
 def load_data():
     df = pd.read_csv('Obesity.csv')
     
-    # Renomear colunas para facilitar a manipulação e visualização
+    # Renomear colunas
     df.columns = ['Gender', 'Age', 'Height', 'Weight', 'Family_History_with_Overweight',
                   'FAVC', 'FCVC', 'NCP', 'CAEC', 'SMOKE', 'CH2O', 'SNC', 'FAF',
                   'TUE', 'CALC', 'MTRANS', 'NObeyesdad']
     
-    # Mapear e traduzir NObeyesdad para português e padronizar
+    # Mapear níveis de obesidade
     obesity_map = {
         'Insufficient_Weight': 'Baixo Peso',
         'Normal_Weight': 'Peso Normal',
@@ -128,7 +127,7 @@ def load_data():
     # Criar coluna de IMC
     df['IMC'] = df['Weight'] / (df['Height'] ** 2)
     
-    # Traduzir outras colunas categóricas
+    # Traduzir colunas categóricas
     df['Gender_PT'] = df['Gender'].replace({'Male': 'Masculino', 'Female': 'Feminino'})
     df['Family_History_with_Overweight_PT'] = df['Family_History_with_Overweight'].replace({'yes': 'Sim', 'no': 'Não'})
     df['SMOKE_PT'] = df['SMOKE'].replace({'yes': 'Sim', 'no': 'Não'})
@@ -140,17 +139,13 @@ def load_data():
 df = load_data()
 
 # ============================================================================
-# FUNÇÃO PARA GERAR O PAINEL
+# FUNÇÃO PRINCIPAL DO DASHBOARD
 # ============================================================================
-
-def formatar_categoria(categoria):
-    """Aplica a formatação correta para os algarismos romanos"""
-    return categoria.replace('I', 'I').replace('II', 'II').replace('III', 'III')
 
 def create_dashboard():
     
     # Título Principal
-    st.markdown(f"""
+    st.markdown("""
     <div class='main-header'>
         <h1>📊 Painel Analítico: Fatores de Obesidade</h1>
         <p>Insights Estratégicos Baseados em Dados para Equipes Médicas</p>
@@ -197,13 +192,27 @@ def create_dashboard():
         
         st.info(f"Dados Filtrados: {len(df_filtered)} registros")
 
-    # Se não houver dados, exibir mensagem
+    # Validação de dados
     if df_filtered.empty:
         st.warning("Nenhum dado encontrado com os filtros selecionados.")
         return
 
+    # Ordem das categorias
+    order = ['Baixo Peso', 'Peso Normal', 'Sobrepeso I', 'Sobrepeso II', 'Obesidade I', 'Obesidade II', 'Obesidade III']
+    
+    # Mapa de cores
+    color_map = {
+        'Baixo Peso': '#2196f3',
+        'Peso Normal': '#4caf50',
+        'Sobrepeso I': '#ffc107',
+        'Sobrepeso II': '#ff9800',
+        'Obesidade I': '#ff5722',
+        'Obesidade II': '#f44336',
+        'Obesidade III': '#b71c1c'
+    }
+
     # ============================================================================
-    # LINHA 1: MÉTRICAS CHAVE (KPIs)
+    # MÉTRICAS CHAVE (KPIs)
     # ============================================================================
     st.markdown("### 🔑 Métricas Chave")
     
@@ -226,7 +235,7 @@ def create_dashboard():
     st.markdown("---")
 
     # ============================================================================
-    # LINHA 2: DISTRIBUIÇÃO E FATORES DE RISCO
+    # DISTRIBUIÇÃO E FATORES DE RISCO
     # ============================================================================
     col_dist, col_risco = st.columns([1.5, 1])
     
@@ -236,9 +245,6 @@ def create_dashboard():
         
         df_dist = df_filtered['NObeyesdad_PT'].value_counts().reset_index()
         df_dist.columns = ['Nível de Peso', 'Contagem']
-        
-        # Definir uma ordem lógica para o eixo Y
-        order = ['Baixo Peso', 'Peso Normal', 'Sobrepeso I', 'Sobrepeso II', 'Obesidade I', 'Obesidade II', 'Obesidade III']
         df_dist['Nível de Peso'] = pd.Categorical(df_dist['Nível de Peso'], categories=order, ordered=True)
         df_dist = df_dist.sort_values('Nível de Peso')
         
@@ -248,31 +254,19 @@ def create_dashboard():
             x='Contagem', 
             orientation='h',
             color='Nível de Peso',
-            color_discrete_map={
-                'Baixo Peso': '#2196f3',
-                'Peso Normal': '#4caf50',
-                'Sobrepeso I': '#ffc107',
-                'Sobrepeso II': '#ff9800',
-                'Obesidade I': '#ff5722',
-                'Obesidade II': '#f44336',
-                'Obesidade III': '#b71c1c'
-            },
+            color_discrete_map=color_map,
             template="plotly_dark",
             title="Contagem de Pacientes por Nível de Peso"
         )
         fig_dist.update_layout(showlegend=False, yaxis_title=None, xaxis_title="Número de Pacientes")
         st.plotly_chart(fig_dist, use_container_width=True)
 
-    # Gráfico 2: Fatores de Risco (Histórico Familiar)
+    # Gráfico 2: Histórico Familiar
     with col_risco:
         st.markdown("### 🧬 Relação: Histórico Familiar")
         
         df_hist = df_filtered.groupby('Family_History_with_Overweight_PT')['NObeyesdad'].value_counts(normalize=True).mul(100).rename('Percentual').reset_index()
-        
-        # Filtrar apenas Obesidade
         df_hist_obesity = df_hist[df_hist['NObeyesdad'].str.contains('Obesity')]
-        
-        # Agrupar por Histórico Familiar
         df_hist_sum = df_hist_obesity.groupby('Family_History_with_Overweight_PT')['Percentual'].sum().reset_index()
         
         fig_hist = px.pie(
@@ -289,20 +283,18 @@ def create_dashboard():
     st.markdown("---")
 
     # ============================================================================
-    # LINHA 3: HÁBITOS ALIMENTARES E ESTILO DE VIDA
+    # HÁBITOS ALIMENTARES E ESTILO DE VIDA
     # ============================================================================
     st.markdown("### 🥗 Hábitos e Estilo de Vida")
     
     col_habito1, col_habito2 = st.columns(2)
     
-    # Gráfico 3: Consumo de Água (CH2O) vs Obesidade
+    # Gráfico 3: Consumo de Água
     with col_habito1:
         st.markdown("#### Média de Consumo de Água (CH2O)")
         
         df_ch2o = df_filtered.groupby('NObeyesdad_PT')['CH2O'].mean().reset_index()
         df_ch2o.columns = ['Nível de Peso', 'Média de CH2O']
-        
-        # Definir ordem
         df_ch2o['Nível de Peso'] = pd.Categorical(df_ch2o['Nível de Peso'], categories=order, ordered=True)
         df_ch2o = df_ch2o.sort_values('Nível de Peso')
         
@@ -317,14 +309,12 @@ def create_dashboard():
         fig_ch2o.update_layout(xaxis_title=None, yaxis_title="Média de Consumo", showlegend=False)
         st.plotly_chart(fig_ch2o, use_container_width=True)
 
-    # Gráfico 4: Frequência de Atividade Física (FAF) vs Obesidade
+    # Gráfico 4: Atividade Física
     with col_habito2:
         st.markdown("#### Média de Atividade Física (FAF)")
         
         df_faf = df_filtered.groupby('NObeyesdad_PT')['FAF'].mean().reset_index()
         df_faf.columns = ['Nível de Peso', 'Média de FAF']
-        
-        # Definir ordem
         df_faf['Nível de Peso'] = pd.Categorical(df_faf['Nível de Peso'], categories=order, ordered=True)
         df_faf = df_faf.sort_values('Nível de Peso')
         
@@ -342,7 +332,120 @@ def create_dashboard():
     st.markdown("---")
     
     # ============================================================================
-    # LINHA 4: INFORMAÇÕES ADICIONAIS
+    # NOVA SEÇÃO: ANÁLISES APROFUNDADAS
+    # ============================================================================
+    st.markdown("### 🔬 Análises Aprofundadas")
+    
+    # Heatmap de Correlação
+    st.markdown("#### 🌡️ Mapa de Calor: Correlação entre Variáveis")
+    
+    # Selecionar variáveis numéricas relevantes
+    numeric_cols = ['Age', 'Height', 'Weight', 'IMC', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE']
+    df_corr = df_filtered[numeric_cols].corr()
+    
+    # Criar heatmap
+    fig_heatmap = go.Figure(data=go.Heatmap(
+        z=df_corr.values,
+        x=['Idade', 'Altura', 'Peso', 'IMC', 'Consumo Vegetais', 'Nº Refeições', 'Consumo Água', 'Atividade Física', 'Tempo em Telas'],
+        y=['Idade', 'Altura', 'Peso', 'IMC', 'Consumo Vegetais', 'Nº Refeições', 'Consumo Água', 'Atividade Física', 'Tempo em Telas'],
+        colorscale='RdBu_r',
+        zmid=0,
+        text=np.round(df_corr.values, 2),
+        texttemplate='%{text}',
+        textfont={"size": 10},
+        colorbar=dict(title="Correlação")
+    ))
+    
+    fig_heatmap.update_layout(
+        title="Matriz de Correlação entre Variáveis Numéricas",
+        template="plotly_dark",
+        height=600,
+        xaxis_title=None,
+        yaxis_title=None
+    )
+    
+    st.plotly_chart(fig_heatmap, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Box Plots
+    st.markdown("#### 📦 Distribuição de Variáveis por Nível de Obesidade")
+    
+    col_box1, col_box2, col_box3 = st.columns(3)
+    
+    # Box Plot 1: IMC
+    with col_box1:
+        df_box_imc = df_filtered.copy()
+        df_box_imc['NObeyesdad_PT'] = pd.Categorical(df_box_imc['NObeyesdad_PT'], categories=order, ordered=True)
+        df_box_imc = df_box_imc.sort_values('NObeyesdad_PT')
+        
+        fig_box_imc = px.box(
+            df_box_imc,
+            x='NObeyesdad_PT',
+            y='IMC',
+            color='NObeyesdad_PT',
+            color_discrete_map=color_map,
+            template="plotly_dark",
+            title="Distribuição de IMC"
+        )
+        fig_box_imc.update_layout(
+            showlegend=False,
+            xaxis_title=None,
+            yaxis_title="IMC",
+            xaxis={'tickangle': -45}
+        )
+        st.plotly_chart(fig_box_imc, use_container_width=True)
+    
+    # Box Plot 2: Idade
+    with col_box2:
+        df_box_age = df_filtered.copy()
+        df_box_age['NObeyesdad_PT'] = pd.Categorical(df_box_age['NObeyesdad_PT'], categories=order, ordered=True)
+        df_box_age = df_box_age.sort_values('NObeyesdad_PT')
+        
+        fig_box_age = px.box(
+            df_box_age,
+            x='NObeyesdad_PT',
+            y='Age',
+            color='NObeyesdad_PT',
+            color_discrete_map=color_map,
+            template="plotly_dark",
+            title="Distribuição de Idade"
+        )
+        fig_box_age.update_layout(
+            showlegend=False,
+            xaxis_title=None,
+            yaxis_title="Idade (anos)",
+            xaxis={'tickangle': -45}
+        )
+        st.plotly_chart(fig_box_age, use_container_width=True)
+    
+    # Box Plot 3: Atividade Física
+    with col_box3:
+        df_box_faf = df_filtered.copy()
+        df_box_faf['NObeyesdad_PT'] = pd.Categorical(df_box_faf['NObeyesdad_PT'], categories=order, ordered=True)
+        df_box_faf = df_box_faf.sort_values('NObeyesdad_PT')
+        
+        fig_box_faf = px.box(
+            df_box_faf,
+            x='NObeyesdad_PT',
+            y='FAF',
+            color='NObeyesdad_PT',
+            color_discrete_map=color_map,
+            template="plotly_dark",
+            title="Distribuição de Atividade Física"
+        )
+        fig_box_faf.update_layout(
+            showlegend=False,
+            xaxis_title=None,
+            yaxis_title="Frequência (0-3)",
+            xaxis={'tickangle': -45}
+        )
+        st.plotly_chart(fig_box_faf, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # ============================================================================
+    # INSIGHTS PARA EQUIPE MÉDICA
     # ============================================================================
     st.markdown("### 💡 Insights para a Equipe Médica")
     
@@ -357,6 +460,10 @@ def create_dashboard():
         - **Atividade Física (FAF):** A média de FAF é claramente **inversamente proporcional** ao nível de peso. Pacientes com 'Peso Normal' e 'Baixo Peso' apresentam as maiores médias de FAF, enquanto os níveis de 'Obesidade' têm as menores. **Focar na FAF** é uma estratégia de intervenção primária.
         
         - **Distribuição:** A distribuição é razoavelmente uniforme entre as categorias, indicando que o modelo de Machine Learning tem dados balanceados para todas as classes.
+        
+        - **Correlações (Heatmap):** O mapa de calor revela que o IMC tem forte correlação positiva com Peso (esperado) e correlação negativa com Atividade Física. Idade apresenta correlações fracas com a maioria das variáveis, sugerindo que a obesidade não é predominantemente relacionada à idade nesta população.
+        
+        - **Distribuições (Box Plots):** Os box plots mostram claramente a separação entre os níveis de obesidade em termos de IMC. A distribuição de idade é similar entre os grupos, mas a atividade física mostra uma tendência clara de redução conforme aumenta o nível de obesidade.
         """)
 
 # Executar o painel
