@@ -327,7 +327,7 @@ with tab1:
             "Peso (kg)",
             min_value=20.0,
             max_value=300.0,
-            value=80.0,
+            value=70.0,
             step=0.1,
             help="Peso atual do paciente em quilogramas"
         )
