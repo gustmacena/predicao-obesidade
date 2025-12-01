@@ -60,7 +60,7 @@ streamlit run app.py
 streamlit run app_dashboard.py
 ```
 
-### 🌐 Links do Deploy (Exemplo)
+### 🌐 Links do Deploy
 
 | Aplicação | URL Pública |
 |---|---|
