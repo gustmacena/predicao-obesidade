@@ -73,8 +73,8 @@ streamlit run app_dashboard.py
 
 ```
 /
-├── app.py         # Aplicação de Predição (Melhorada)
-├── app_dashboard.py            # Painel Analítico (Novo)
+├── app.py         # Aplicação de Predição
+├── app_dashboard.py            # Painel Analítico
 ├── ml_pipeline_obesity.py   # Script de Treinamento do Modelo
 ├── Obesity.csv                 # Dataset Original
 ├── requirements.txt            # Dependências do Projeto
